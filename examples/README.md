@@ -203,4 +203,4 @@ Once your testbench works:
 2. **Synthesize it** - Run through Yosys, check gate count
 3. **Place & route** - LibreLane flow, check timing
 4. **View layout** - Open GDS in KLayout, find your logic
-5. **Tape out** - You made a chip!
+5. **Tape out** - Your design is ready for fabrication!

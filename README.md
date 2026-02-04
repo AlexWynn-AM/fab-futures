@@ -1,6 +1,6 @@
 # Fab Futures: Microelectronics
 
-A 4-week hands-on course where you design, simulate, and tape out your own chip.
+A 4-week hands-on course where you design and simulate your own chip—ready for tapeout.
 
 ## What You'll Build
 

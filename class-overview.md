@@ -14,7 +14,7 @@
 
 ## Course Project: Build Something You Want to Demo
 
-You're going to design, simulate, and tape out a chip. Not a textbook exercise—something you'd actually want to show people.
+You're going to design and simulate a chip—something you'd actually want to show people. Your final design will be tapeout-ready, and you can submit it to a shuttle (like Tiny Tapeout or Efabless) on your own after the course if you want real silicon.
 
 Pick a project:
 
