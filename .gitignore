@@ -9,3 +9,6 @@
 # Environment
 .env
 .env.local
+
+# Review documentation (contains external citations)
+WORKS_CITED.md
