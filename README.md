@@ -1,36 +1,115 @@
-# Fab Futures
+# Fab Futures: Microelectronics
 
-[IIC-OSIC-TOOLS](https://github.com/iic-jku/IIC-OSIC-TOOLS) — all-in-one Docker image for SKY130/GF180/IHP130-based analog and digital chip design.
+A 4-week hands-on course where you design, simulate, and tape out your own chip.
 
-## Prerequisites
+## What You'll Build
 
-- **Docker** ([Install](https://docs.docker.com/get-docker/))
-- **Docker Desktop** must be **running** (on macOS/Windows)
+Pick a project and take it from Verilog to GDS:
 
-## Quick start
+| Project | Description |
+|---------|-------------|
+| **Fortune Teller** | Magic 8-ball — press a button, get a fortune |
+| **Pocket Synth** | 4-button musical instrument |
+| **Dice Roller** | Hardware random dice with 7-segment display |
+| **LED Messenger** | Scroll your name on NeoPixel LEDs |
 
-1. **Start the container** (run in your system terminal, not from Cursor’s integrated terminal if you hit Docker issues):
+All projects use the same RTL-to-GDS flow. You'll learn digital design, synthesis, place & route, and verification — with a chip you actually want to demo.
 
-   ```bash
-   ./run-iic-osic-tools.sh
-   ```
+## Repository Structure
 
-2. **Open in browser:** [http://localhost:8080](http://localhost:8080)  
-   - noVNC password: `abc123`
+```
+fab-futures/
+├── examples/           # Starter projects with full source & testbenches
+│   ├── fortune_teller/
+│   ├── pocket_synth/
+│   ├── dice_roller/
+│   ├── led_messenger/
+│   └── lib/            # Shared modules (UART, debounce)
+├── designs/            # Your work goes here
+├── class-overview.md   # Full 4-week curriculum
+└── IIC-OSIC-TOOLS/     # Docker-based EDA toolchain
+```
 
-3. Use the XFCE desktop in the browser to run **Magic**, **KLayout**, **Xschem**, **OpenROAD**, **Yosys**, and other tools.
+## Quick Start
 
-## Options
+### 1. Install Docker
 
-- **Designs directory:** Stored in `./designs` (mounted as `/foss/designs` in the container). Override with `DESIGNS=/path/to/designs ./run-iic-osic-tools.sh`.
-- **Port:** Default web port is `8080`. Use `WEBSERVER_PORT=80 ./run-iic-osic-tools.sh` if you prefer port 80 (may require `sudo` on some systems).
+- [Get Docker](https://docs.docker.com/get-docker/)
+- Make sure Docker Desktop is **running**
 
-## Other modes
+### 2. Start the Environment
 
-From `IIC-OSIC-TOOLS/`:
+```bash
+./run-iic-osic-tools.sh
+```
 
-- **Shell only (no GUI):** `./start_shell.sh`
-- **Jupyter:** `./start_jupyter.sh`
-- **Local X11 (e.g. XQuartz on Mac):** `./start_x.sh`
+### 3. Open in Browser
 
-See [IIC-OSIC-TOOLS README](IIC-OSIC-TOOLS/README.md) for details, PDK setup (`sak-pdk`), and more.
+Go to [http://localhost:8080](http://localhost:8080) (password: `abc123`)
+
+You'll get a full Linux desktop with all the EDA tools pre-installed:
+- **Xschem** — schematic capture
+- **ngspice** — SPICE simulation
+- **Yosys** — synthesis
+- **OpenROAD** — place & route
+- **Magic / KLayout** — layout viewing
+- **Icarus Verilog** — simulation
+- **GTKWave** — waveform viewer
+
+### 4. Run Your First Simulation
+
+Inside the container:
+
+```bash
+cd /foss/designs
+cp -r /path/to/examples/fortune_teller .
+cd fortune_teller
+iverilog -o sim.vvp -I../lib fortune_teller.v fortune_teller_tb.v ../lib/*.v
+vvp sim.vvp
+```
+
+## Course Overview
+
+| Week | Topics |
+|------|--------|
+| **1** | Foundations — semiconductors, dev pipeline, PDK setup, analog basics |
+| **2** | Schematic & Fabrication — SPICE, layout, DRC/LVS |
+| **3** | Digital Design — RTL, synthesis, place & route, timing |
+| **4** | Testing & Integration — packaging, verification, presentations |
+
+See [`class-overview.md`](class-overview.md) for the full curriculum with homework assignments.
+
+## Example Projects
+
+Each example includes:
+- Heavily commented Verilog (designed for beginners)
+- Working testbench with simulation instructions
+- Concepts explained inline (state machines, timing, protocols)
+
+See [`examples/README.md`](examples/README.md) for project details and customization ideas.
+
+## Tools & PDKs
+
+This course uses [IIC-OSIC-TOOLS](https://github.com/iic-jku/IIC-OSIC-TOOLS), an all-in-one Docker container with open-source EDA tools.
+
+Supported PDKs:
+- **SkyWater 130nm** (sky130A) — primary
+- **GlobalFoundries 180nm** (gf180mcuD)
+- **IHP 130nm** (ihp-sg13g2)
+
+## Alternative Modes
+
+From the `IIC-OSIC-TOOLS/` directory:
+
+```bash
+./start_shell.sh    # Terminal only (no GUI)
+./start_jupyter.sh  # Jupyter notebooks
+./start_x.sh        # Local X11 (XQuartz on Mac)
+```
+
+## Resources
+
+- [IIC-OSIC-TOOLS Documentation](https://github.com/iic-jku/IIC-OSIC-TOOLS)
+- [SkyWater PDK Documentation](https://skywater-pdk.readthedocs.io/)
+- [OpenROAD Documentation](https://openroad.readthedocs.io/)
+- [Zero to ASIC Course](https://zerotoasiccourse.com/) — Matt Venn's excellent course
