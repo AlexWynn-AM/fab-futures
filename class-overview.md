@@ -2,6 +2,14 @@
 
 **Format:** 4 weeks, 2 sessions per week
 
+## Faculty
+
+| Instructor | Affiliation | Topics |
+|------------|-------------|--------|
+| **Jennifer Volk (JV)** | University of Wisconsin-Madison | Analog fundamentals, schematic design, SPICE simulation |
+| **Andreas Olofsson (AO)** | Zero ASIC | Digital design, RTL methodology, synthesis, physical design |
+| **Alex Wynn (AW)** | MIT | Fabrication, layout, packaging, board design |
+
 ---
 
 ## Course Project: Build Something You Want to Demo
