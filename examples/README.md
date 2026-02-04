@@ -8,6 +8,22 @@ the same RTL-to-GDS flow. The difference is what your chip *does*.
 
 ---
 
+## Silicon-Proven Inspiration
+
+These aren't theoretical -- real people have taped out similar projects and
+they work on actual silicon. Browse them for ideas and reference implementations:
+
+**Gallery:** https://tinytapeout.com/chips/silicon-proven/
+
+| Project | Description | Source |
+|---------|-------------|--------|
+| [Analog Monosynth](https://tinytapeout.com/chips/tt05/262) | Two oscillators + filter, similar to Pocket Synth | [GitHub](https://github.com/toivoh/tt05-synth) |
+| [TTRPG Dice](https://tinytapeout.com/chips/tt06/105) | D4/D6/D8/D10/D12/D20 with 7-seg, similar to Dice Roller | [GitHub](https://github.com/sanojn/tt06_ttrpg_dice) |
+| [Super Mario Tune](https://tinytapeout.com/chips/tt05/197) | Plays melody on piezo speaker | [GitHub](https://github.com/meriac/tt05-play-tune) |
+| [Simon Says](https://tinytapeout.com/chips/tt06/899) | Memory game with LEDs and audio | [GitHub](https://github.com/urish/tt06-simon-game) |
+
+---
+
 ## Fortune Teller
 
 **What it does:** Press a button, get a fortune. It's a Magic 8-Ball on silicon.
