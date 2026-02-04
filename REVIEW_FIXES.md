@@ -28,7 +28,7 @@
 ### Notebook 06
 - [x] Add explanation for negative setup time in timing reports
 - [x] Add note about Tiny Tapeout submission format
-- [ ] Add real synthesis results for one of the example projects
+- [x] Add real synthesis results for one of the example projects (fortune_teller)
 
 ## Priority 3: Consistency Issues
 
