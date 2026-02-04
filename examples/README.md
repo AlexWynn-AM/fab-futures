@@ -139,6 +139,34 @@ examples/led_messenger/
 
 ---
 
+## Your Own Idea
+
+The best projects aren't on this list—they're yours.
+
+**What makes a good custom project?**
+
+- **Fits the constraints**: ~200-500 gates, 50 MHz clock, 5-10 I/O pins
+- **Has a demo moment**: Something you can show someone in 30 seconds
+- **You actually care about it**: You'll spend weeks on this; pick something fun
+
+**Ideas that work well:**
+
+- Games (reaction timer, pattern memory, simple puzzles)
+- Art (LED patterns, sound generators, light-to-sound)
+- Useful tools (frequency counter, PWM controller, serial decoder)
+- Weird stuff (hardware RNG, cellular automata, prime number sieve)
+
+**How to pitch it:**
+
+1. One sentence: what does it do?
+2. I/O list: what pins do you need?
+3. Quick estimate: how complex? (compare to the examples)
+4. Demo plan: how will you show it works?
+
+Talk to the instructors early—we can help scope it.
+
+---
+
 ## Shared Library
 
 Common modules used by multiple projects:

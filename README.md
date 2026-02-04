@@ -109,7 +109,8 @@ From the `IIC-OSIC-TOOLS/` directory:
 
 ## Resources
 
+- [Fab Futures Program](https://futures.academany.org/classes/microelectronics/) — official Academany microelectronics course
 - [IIC-OSIC-TOOLS Documentation](https://github.com/iic-jku/IIC-OSIC-TOOLS)
 - [SkyWater PDK Documentation](https://skywater-pdk.readthedocs.io/)
 - [OpenROAD Documentation](https://openroad.readthedocs.io/)
-- [Zero to ASIC Course](https://zerotoasiccourse.com/) — Matt Venn's excellent course
+- [Zero to ASIC Course](https://zerotoasiccourse.com/) — Matt Venn's course on chip design
