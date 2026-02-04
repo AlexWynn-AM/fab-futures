@@ -4,23 +4,39 @@
 
 ---
 
-## Course Project: Build a Chip That Transmits Some Data!
+## Course Project: Build Something You Want to Demo
 
-Students build a chip that transmits data over serial (UART). A reference UART TX module is provided (~50 lines of Verilog). Students implement the data source (~10-30 lines), then take the complete design through the RTL-to-GDS flow.
+You're going to design, simulate, and tape out a chip. Not a textbook exercise—something you'd actually want to show people.
 
-**Base design:**
-- UART TX module (provided): baud generator, shift register, FSM
-- Data source (student-designed): generates bytes to transmit
-- Top-level wrapper connecting data source to UART TX
+Pick a project:
 
-**Extension options:**
-- Message ROM: transmit your name or a phrase on startup
-- Counter: transmit incrementing numbers on a timer
-- LFSR: transmit pseudo-random bytes
-- Button interface: transmit characters based on input pins
-- Pattern generator: transmit a repeating sequence (morse code, musical notes, etc.)
-- Timer: transmit elapsed time periodically
-- UART RX: make it bidirectional (advanced)
+| Project | What it does | I/O |
+|---------|--------------|-----|
+| **Fortune Teller** | Magic 8-ball on silicon. Press button, get fortune. | Button, LED, serial |
+| **Pocket Synth** | 4-note musical instrument. Press buttons, make tones. | 4 buttons, speaker, LEDs |
+| **Dice Roller** | Hardware random dice with rolling animation. | Button, 7-segment, LED |
+| **LED Messenger** | Scroll your name on NeoPixel LEDs. | Button, LED strip data |
+| **Your Idea** | Pitch something that fits the constraints. | ~5-10 pins total |
+
+All projects use the same RTL-to-GDS flow. The difference is what your chip *does*.
+
+**Constraints:**
+- ~200-500 gates (keeps P&R fast, fits educational tapeout)
+- Single clock domain (50 MHz)
+- 5-10 I/O pins
+- Must simulate correctly before synthesis
+
+**What we provide:**
+- Working example designs with testbenches (see `examples/`)
+- Shared library modules (UART, debounce, etc.)
+- Complete toolchain in Docker container
+- Reference documentation for each step
+
+**What you build:**
+- Customize an example *or* design your own
+- Write/modify ~30-100 lines of Verilog
+- Take it through the full flow: simulate → lint → synthesize → P&R → GDS
+- Demo your chip at the end of week 4
 
 ---
 
@@ -76,7 +92,7 @@ Students build a chip that transmits data over serial (UART). A reference UART T
 **Project homework:**
 - Draw schematic for a 2-input NAND gate using PDK cells
 - Simulate in SPICE: verify truth table, measure propagation delay
-- Brainstorm: What do you want your chip to transmit? A message? Counter? Random numbers?
+- Pick your project: Fortune Teller? Synth? Dice? LEDs? Something else?
 
 ### Thursday: Fabrication Basics *(AW)*
 
@@ -91,7 +107,7 @@ Students build a chip that transmits data over serial (UART). A reference UART T
 **Project homework:**
 - Hand-draw layout for an inverter using PDK layers
 - Run DRC - fix any errors
-- Sketch block diagram for your UART project: data source + UART TX
+- Sketch block diagram for your project: what are the major components?
 
 ---
 
@@ -111,9 +127,9 @@ Students build a chip that transmits data over serial (UART). A reference UART T
 - Waveform viewing: GTKWave
 
 **Project homework:**
-- Write Verilog for your data source module (10-30 lines)
-- Connect to provided UART TX module, create top-level wrapper
-- Simulate with testbench, view waveforms
+- Write/modify Verilog for your project (start from an example or scratch)
+- Create top-level wrapper, connect any library modules you need
+- Simulate with testbench, view waveforms in GTKWave
 - Run linter, fix any warnings
 
 ### Thursday: Synthesis & Physical Design *(AO)*
@@ -148,9 +164,9 @@ Students build a chip that transmits data over serial (UART). A reference UART T
 
 **Project homework:**
 - Run DRC/LVS on final design - fix any errors
-- Document: what your chip transmits, pin assignments, baud rate
-- Create test plan: how to verify output works
-- Prepare presentation for Thursday
+- Document: what your chip does, pin assignments, how to test it
+- Create test plan: how will you verify it works on real hardware?
+- Prepare presentation/demo for Thursday
 
 ### Thursday: Presentations & Discussion
 
@@ -159,5 +175,6 @@ Students build a chip that transmits data over serial (UART). A reference UART T
 - Discussion and Q&A
 
 **Project homework:**
-- Present your design: what it transmits, block diagram, waveforms, layout screenshot
-- Reflect on the process: what worked, what was difficult, ideas for future work
+- Demo your design: show it working (simulation or FPGA), explain what it does
+- Present: block diagram, key waveforms, layout screenshot, gate count
+- Reflect: what worked, what was hard, what you'd do differently
