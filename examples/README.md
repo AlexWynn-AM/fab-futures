@@ -1,10 +1,17 @@
 # Example Projects
 
-Pick a project. Build a chip. Show it off.
+These examples are **starting points**, not finished assignments.
 
-Each project is a complete, working design you can tape out. They all fit the
-same constraints (~200-500 gates, 50 MHz clock, a handful of I/O pins) and use
-the same RTL-to-GDS flow. The difference is what your chip *does*.
+Your goal is to make something you'd actually want to demo. Use these as
+reference implementations, then make them your own:
+
+- **Modify** an example: change the fortunes, the notes, the colors, the message
+- **Extend** it: add features, combine ideas, make it weird
+- **Design your own**: pitch something that fits the constraints
+
+Each project fits the same constraints (~200-500 gates, 50 MHz clock, a handful
+of I/O pins) and uses the same RTL-to-GDS flow. The "Customize it" sections
+below are the *minimum* expectation—the best projects go further.
 
 ---
 
