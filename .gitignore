@@ -10,8 +10,11 @@
 .env
 .env.local
 
-# Review documentation (contains external citations)
+# Internal review/development files
 WORKS_CITED.md
-
-# Development notes (internal action items)
 NOTES.md
+TECHNICAL_REVIEW.md
+REVIEW_FIXES.md
+
+# Presentation files (too large for git)
+*.key
