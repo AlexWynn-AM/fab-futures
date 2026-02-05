@@ -1,0 +1,25 @@
+/* Fix notebook header divs - ensure text is visible */
+.md-content div[style*="background: linear-gradient"] {
+  color: white !important;
+}
+
+.md-content div[style*="background: linear-gradient"] h1,
+.md-content div[style*="background: linear-gradient"] p {
+  color: white !important;
+}
+
+/* Code toggle button */
+.code-toggle {
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-bottom: 8px;
+  color: var(--md-default-fg-color--light);
+}
+
+.code-toggle:hover {
+  background: var(--md-accent-fg-color--transparent);
+}

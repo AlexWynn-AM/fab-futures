@@ -1,0 +1,55 @@
+site_name: Fab Futures
+site_description: Chip design course materials
+repo_url: https://github.com/AlexWynn-AM/fab-futures
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocs-jupyter:
+      include_source: true
+      execute: false
+      ignore_h1_titles: true
+
+nav:
+  - Home: index.md
+  - Lectures:
+    - "Introduction & Development Pipeline": notebooks/01_introduction_pipeline.ipynb
+    - "Analog Basics": notebooks/02_analog_basics.ipynb
+    - "Schematic Design & Simulation": notebooks/03_schematic_simulation.ipynb
+    - "Layout & Fabrication": notebooks/04_layout_fabrication.ipynb
+    - "RTL Design & Verification": notebooks/05_rtl_design_verification.ipynb
+    - "Synthesis & Physical Design": notebooks/06_synthesis_physical_design.ipynb
+    - "Packaging & Board Design": notebooks/07_packaging_board_design.ipynb
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - admonition
+  - pymdownx.details

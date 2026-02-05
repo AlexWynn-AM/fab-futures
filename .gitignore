@@ -18,3 +18,7 @@ REVIEW_FIXES.md
 
 # Presentation files (too large for git)
 *.key
+
+# MkDocs
+site/
+.venv/
