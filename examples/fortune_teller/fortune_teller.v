@@ -165,7 +165,7 @@ module fortune_teller #(
         rom[87] = 8'h75;  // 'u'
         rom[88] = 8'h62;  // 'b'
         rom[89] = 8'h74;  // 't'
-        rom[90] = 8'h66;  // 'f'
+        rom[90] = 8'h74;  // 't'
         rom[91] = 8'h75;  // 'u'
         rom[92] = 8'h6C;  // 'l'
         rom[93] = 8'h2E;  // '.'

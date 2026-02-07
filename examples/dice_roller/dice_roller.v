@@ -49,37 +49,37 @@ module dice_roller #(
     );
 
     // ========================================================================
-    // LFSR Random Number Generator
+    // Fair Dice Generator (1-6)
     // ========================================================================
     //
-    // Same as the fortune teller - runs continuously, button timing picks value.
-    // We use a 16-bit LFSR for longer sequences.
+    // For a fair dice, each value 1-6 must have equal probability (1/6).
+    //
+    // We use a simple counter that cycles 1->2->3->4->5->6->1->...
+    // The counter runs on every clock cycle (50 million times per second!).
+    // When you press the button, you sample the counter's current value.
+    //
+    // Since humans can't time button presses to the nanosecond, this gives
+    // effectively random and perfectly fair results.
+    //
+    // WHY NOT USE LFSR BITS DIRECTLY?
+    // An LFSR gives us pseudo-random bits, but mapping 3 bits (0-7) to
+    // dice values (1-6) is tricky. Naive approaches like "if >5, wrap around"
+    // give some values higher probability than others. A mod-6 counter
+    // avoids this problem entirely.
 
-    reg [15:0] lfsr;
-
-    // Feedback taps for maximal-length 16-bit sequence
-    wire feedback = lfsr[15] ^ lfsr[14] ^ lfsr[12] ^ lfsr[3];
+    reg [2:0] dice_counter;  // Cycles 1-6 continuously
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-            lfsr <= 16'hBEEF;  // Seed (any non-zero value)
+            dice_counter <= 3'd1;
+        else if (dice_counter >= 3'd6)
+            dice_counter <= 3'd1;
         else
-            lfsr <= {lfsr[14:0], feedback};
+            dice_counter <= dice_counter + 1;
     end
 
-    // ========================================================================
-    // Convert LFSR to Dice Value (1-6)
-    // ========================================================================
-    //
-    // The LFSR gives us values 0-7 (3 bits), but dice are 1-6.
-    // We map: 0->1, 1->2, 2->3, 3->4, 4->5, 5->6, 6->1, 7->2
-    //
-    // Simple formula: ((value % 6) + 1) = valid dice roll
-
-    wire [2:0] raw_roll = lfsr[2:0];  // Take 3 bits (0-7)
-
-    // If 0-5, add 1 to get 1-6. If 6-7, subtract 5 to get 1-2.
-    wire [2:0] dice_val = (raw_roll > 5) ? (raw_roll - 5) : (raw_roll + 1);
+    // The "random" value is whatever the counter holds when sampled
+    wire [2:0] dice_val = dice_counter;
 
     // ========================================================================
     // Animation Timing
@@ -101,7 +101,7 @@ module dice_roller #(
     localparam SHOW    = 2'd2;  // Displaying final result
 
     reg [1:0]  state;
-    reg [25:0] roll_timer;   // Counts total rolling time
+    reg [27:0] roll_timer;   // Counts total rolling time (needs 28 bits for 2 sec @ 50MHz)
     reg [19:0] step_timer;   // Counts time per animation step
     reg [2:0]  display_val;  // What's shown on the display (1-6)
     reg [2:0]  anim_counter; // Cycles 1-6 during animation
