@@ -246,15 +246,26 @@ module fortune_teller #(
     // ========================================================================
     // LFSR - Random Number Generator
     // ========================================================================
-    // An LFSR creates pseudo-random numbers using XOR feedback.
-    // It cycles through all possible values (except 0) before repeating.
+    // An LFSR (Linear Feedback Shift Register) creates pseudo-random numbers
+    // using XOR feedback. It cycles through all possible values (except 0)
+    // before repeating.
     //
-    // The key insight: the LFSR runs CONTINUOUSLY on every clock cycle.
-    // The exact moment you press the button determines which "random"
-    // value you get. Since humans can't time button presses to the
-    // nanosecond, this gives good randomness!
+    // POLYNOMIAL THEORY:
+    // The taps correspond to a primitive polynomial over GF(2):
+    //   x^8 + x^5 + x^4 + x^3 + 1  (taps at bits 7,5,4,3 counting from 0)
     //
-    // The XOR taps [7,5,4,3] are chosen to create a maximal-length sequence.
+    // A primitive polynomial of degree n produces a sequence of length
+    // 2^n - 1 before repeating. For n=8: 2^8 - 1 = 255 unique states.
+    //
+    // Not all tap combinations work! The polynomial must be "primitive"
+    // (irreducible and of maximal period). These are tabulated in references
+    // like Xilinx XAPP052 or Wikipedia "Linear-feedback shift register".
+    //
+    // RANDOMNESS TRICK:
+    // The LFSR runs CONTINUOUSLY on every clock cycle. The exact moment
+    // you press the button determines which "random" value you get.
+    // Since humans can't time button presses to the nanosecond, this
+    // gives effectively random results!
 
     reg [7:0] lfsr;  // 8-bit shift register
 
