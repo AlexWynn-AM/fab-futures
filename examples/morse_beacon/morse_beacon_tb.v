@@ -1,57 +1,49 @@
 // ============================================================================
-// LED Messenger Testbench
+// Morse Beacon Testbench
 // ============================================================================
 //
-// This testbench verifies the WS2812 LED driver by:
+// This testbench verifies the Morse code beacon by:
 //   1. Capturing the serial data sent to the LED strip
 //   2. Decoding the WS2812 protocol to extract color values
-//   3. Printing the color of each LED
+//   3. Detecting dots, dashes, and gaps in the Morse output
 //
-// WS2812 PROTOCOL RECAP:
-//   - Each bit is encoded as a pulse:
-//       '0' bit: ~0.4µs HIGH, ~0.8µs LOW
-//       '1' bit: ~0.8µs HIGH, ~0.4µs LOW
-//   - Each LED needs 24 bits (8 green, 8 red, 8 blue)
-//   - After all LEDs, hold LOW for 50µs to latch
+// MORSE TIMING RECAP:
+//   - Dot  = 1 unit (LEDs on)
+//   - Dash = 3 units (LEDs on)
+//   - Gap between symbols = 1 unit (LEDs off)
+//   - Gap between letters = 3 units (LEDs off)
+//   - Gap between words   = 7 units (LEDs off)
 //
 // HOW TO RUN:
-//   $ iverilog -o sim.vvp -I../lib led_messenger.v led_messenger_tb.v ../lib/*.v
+//   $ iverilog -o sim.vvp -I../lib morse_beacon.v morse_beacon_tb.v ../lib/*.v
 //   $ vvp sim.vvp
 //
 // ============================================================================
 
 `timescale 1ns/1ps
 
-module led_messenger_tb;
+module morse_beacon_tb;
 
     // ========================================================================
     // Testbench Signals
     // ========================================================================
 
-    reg  clk;        // Clock
-    reg  rst_n;      // Reset
-    reg  btn_color;  // Color change button
-    wire led_data;   // WS2812 data output
+    reg  clk;
+    reg  rst_n;
+    reg  btn_color;
+    wire led_data;
 
     // ========================================================================
     // DUT Instantiation
     // ========================================================================
     //
-    // We use a 1 MHz clock for faster simulation.
-    //
-    // WS2812 timing at 1 MHz (1 µs per clock):
-    //   T0H = 1 MHz / 2,500,000 ≈ 0.4 cycles → rounds to ~1 cycle
-    //   T0L = 1 MHz / 1,250,000 ≈ 0.8 cycles → rounds to ~1 cycle
-    //   T1H = 1 MHz / 1,250,000 ≈ 0.8 cycles → rounds to ~1 cycle
-    //   T1L = 1 MHz / 2,500,000 ≈ 0.4 cycles → rounds to ~1 cycle
-    //
-    // At 1 MHz, the timing is compressed, but the protocol still works
-    // for simulation purposes. Real hardware would use a faster clock.
+    // We use a faster clock and shorter unit time for simulation.
+    // At 1 MHz with UNIT_TIME = CLK_FREQ/10 = 100,000 cycles = 100ms per unit.
+    // That's still slow for simulation, so we'll just run a portion.
 
-    led_messenger #(
-        .CLK_FREQ(1_000_000),   // 1 MHz clock
-        .NUM_LEDS(8),           // 8 LEDs in strip
-        .MSG_LEN(8)             // 8 character message
+    morse_beacon #(
+        .CLK_FREQ(1_000_000),   // 1 MHz clock for simulation
+        .NUM_LEDS(8)
     ) dut (
         .clk(clk),
         .rst_n(rst_n),
@@ -72,29 +64,29 @@ module led_messenger_tb;
     // WS2812 Protocol Decoder
     // ========================================================================
     //
-    // This decoder measures the HIGH pulse width to determine if each bit
-    // is a '0' or '1', then assembles the 24-bit color values.
-    //
-    // Decoding strategy:
-    //   - On rising edge: record the time
-    //   - On falling edge: calculate pulse width
-    //   - If pulse width > 0.5 µs, it's a '1'; otherwise '0'
-    //   - After 24 bits, we have one complete LED color
+    // Decodes WS2812 serial data to extract LED colors.
 
-    time rise_time;       // When the pulse started
-    time fall_time;       // When the pulse ended
-    real high_time_us;    // Pulse width in microseconds
+    time rise_time;
+    time fall_time;
+    real high_time_us;
 
-    reg [23:0] rx_data;   // Accumulated color data (24 bits)
-    reg [4:0]  rx_bit;    // Which bit we're on (0-23)
-    integer    led_count; // Which LED we're receiving (0-7)
+    reg [23:0] rx_data;
+    reg [4:0]  rx_bit;
+    integer    led_count;
+    integer    frame_count;
 
-    // Initialize the decoder state
+    // Track LED on/off state for Morse decoding
+    reg        last_led_on;
+    reg [23:0] last_color;
+
     initial begin
-        rx_bit    = 0;
-        rx_data   = 0;
-        led_count = 0;
-        rise_time = 0;
+        rx_bit      = 0;
+        rx_data     = 0;
+        led_count   = 0;
+        frame_count = 0;
+        rise_time   = 0;
+        last_led_on = 0;
+        last_color  = 0;
     end
 
     // Record time on rising edge
@@ -105,43 +97,35 @@ module led_messenger_tb;
     // Decode on falling edge
     always @(negedge led_data) begin
         fall_time = $time;
-
-        // Calculate pulse width in microseconds
-        // $time is in nanoseconds (due to timescale), so divide by 1000
         high_time_us = (fall_time - rise_time) / 1000.0;
 
-        // Decode the bit based on pulse width
-        // With our compressed timing, threshold around 0.6 µs works
-        if (high_time_us > 0.6) begin
-            // Long pulse = '1' bit
+        if (high_time_us > 0.6)
             rx_data[23 - rx_bit] = 1;
-        end
-        else begin
-            // Short pulse = '0' bit
+        else
             rx_data[23 - rx_bit] = 0;
-        end
 
-        // Move to next bit
         rx_bit = rx_bit + 1;
 
-        // After 24 bits, we have a complete LED color
         if (rx_bit >= 24) begin
-            // Print the color (GRB format)
-            $display("LED %0d: G=0x%02h R=0x%02h B=0x%02h",
-                     led_count,
-                     rx_data[23:16],   // Green (first 8 bits)
-                     rx_data[15:8],    // Red (middle 8 bits)
-                     rx_data[7:0]);    // Blue (last 8 bits)
+            // First LED tells us if Morse signal is on or off
+            if (led_count == 0) begin
+                // Check if LEDs are "on" (non-zero color)
+                if (rx_data != 24'h000000 && last_color == 24'h000000) begin
+                    $display("[%0t] LEDs ON  (color: G=%02h R=%02h B=%02h)",
+                             $time, rx_data[23:16], rx_data[15:8], rx_data[7:0]);
+                end
+                else if (rx_data == 24'h000000 && last_color != 24'h000000) begin
+                    $display("[%0t] LEDs OFF", $time);
+                end
+                last_color = rx_data;
+            end
 
-            // Reset for next LED
             rx_bit = 0;
             led_count = led_count + 1;
 
-            // After all LEDs, reset counter for next frame
             if (led_count >= 8) begin
                 led_count = 0;
-                $display("--- End of frame ---");
-                $display("");
+                frame_count = frame_count + 1;
             end
         end
     end
@@ -151,56 +135,73 @@ module led_messenger_tb;
     // ========================================================================
 
     initial begin
-        // --------------------------------------------------------------------
-        // Setup
-        // --------------------------------------------------------------------
-
-        $dumpfile("led_messenger_tb.vcd");
-        $dumpvars(0, led_messenger_tb);
+        $dumpfile("morse_beacon_tb.vcd");
+        $dumpvars(0, morse_beacon_tb);
 
         clk       = 0;
         rst_n     = 0;
         btn_color = 0;
 
+        $display("");
+        $display("===========================================");
+        $display("Morse Beacon Testbench");
+        $display("===========================================");
+        $display("Message: HELLO");
+        $display("Expected Morse: .... . .-.. .-.. ---");
+        $display("");
+        $display("Watching for LED on/off transitions...");
+        $display("(At 1 MHz sim clock, 1 unit = 100ms = 100,000 cycles)");
+        $display("");
+
         // Release reset
         #10000;
         rst_n = 1;
 
-        // --------------------------------------------------------------------
-        // Watch a Few Frames
-        // --------------------------------------------------------------------
+        // ----------------------------------------------------------------
+        // Watch Morse Output
+        // ----------------------------------------------------------------
+        // The message "HELLO" in Morse:
+        //   H = ....  (4 dots)
+        //   E = .     (1 dot)
+        //   L = .-..  (dot dash dot dot)
+        //   L = .-..  (dot dash dot dot)
+        //   O = ---   (3 dashes)
         //
-        // Let the DUT run and output a few frames of LED data.
-        // Each frame sends 8 LEDs × 24 bits = 192 bits.
-        // At ~1.2 µs per bit + reset time, each frame takes ~0.3 ms.
+        // At 100ms per unit, the full message takes several seconds.
+        // For simulation, we'll just watch the first few symbols.
 
-        $display("Watching LED output (first color mode)...");
-        $display("Colors are in GRB (Green-Red-Blue) format");
+        // Run for 2 seconds of simulated time (enough for H and part of E)
+        // At 1 MHz, 2 seconds = 2,000,000,000 ns = 2 billion cycles
+        // That's too long - let's just run enough to see the pattern start
+
+        #500_000_000;  // 500 ms - should see several dots
+
+        // ----------------------------------------------------------------
+        // Test Color Change
+        // ----------------------------------------------------------------
+
         $display("");
-
-        // Let it run for a few frames
-        #5000000;  // 5 ms = several frames
-
-        // --------------------------------------------------------------------
-        // Change Color
-        // --------------------------------------------------------------------
-
         $display("Pressing color button...");
-        $display("");
 
         btn_color = 1;
-        #20000;         // Brief press
+        #20000;
         btn_color = 0;
 
-        // Wait for debounce and watch new color
-        #15000000;      // 15 ms for debounce
-        #5000000;       // 5 ms more to see output
+        // Wait for debounce
+        #20_000_000;
 
-        // --------------------------------------------------------------------
+        // Watch a bit more
+        #200_000_000;
+
+        // ----------------------------------------------------------------
         // Done
-        // --------------------------------------------------------------------
+        // ----------------------------------------------------------------
 
+        $display("");
+        $display("===========================================");
         $display("Test complete!");
+        $display("Frames captured: %0d", frame_count);
+        $display("===========================================");
         $finish;
     end
 

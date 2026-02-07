@@ -40,7 +40,7 @@
 //
 // ============================================================================
 
-module led_level_meter #(
+module morse_beacon #(
     parameter CLK_FREQ = 50_000_000,  // Clock speed in Hz
     parameter NUM_LEDS = 8            // How many LEDs in your strip
 )(
