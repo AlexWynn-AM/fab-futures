@@ -11,7 +11,7 @@ Pick a project and take it from Verilog to GDS:
 | **Fortune Teller** | Magic 8-ball — press a button, get a fortune |
 | **Pocket Synth** | 4-button musical instrument |
 | **Dice Roller** | Hardware random dice with 7-segment display |
-| **LED Messenger** | Scroll your name on NeoPixel LEDs |
+| **Morse Beacon** | Flash messages in Morse code on LEDs |
 
 All projects use the same RTL-to-GDS flow. You'll learn digital design, synthesis, place & route, and verification — with a chip you actually want to demo.
 
@@ -23,7 +23,7 @@ fab-futures/
 │   ├── fortune_teller/
 │   ├── pocket_synth/
 │   ├── dice_roller/
-│   ├── led_messenger/
+│   ├── morse_beacon/
 │   └── lib/            # Shared modules (UART, debounce)
 ├── designs/            # Your work goes here
 ├── class-overview.md   # Full 4-week curriculum

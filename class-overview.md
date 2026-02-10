@@ -23,7 +23,7 @@ Pick a project:
 | **Fortune Teller** | Magic 8-ball on silicon. Press button, get fortune. | Button, LED, serial |
 | **Pocket Synth** | 4-note musical instrument. Press buttons, make tones. | 4 buttons, speaker, LEDs |
 | **Dice Roller** | Hardware random dice with rolling animation. | Button, 7-segment, LED |
-| **LED Messenger** | Scroll your name on NeoPixel LEDs. | Button, LED strip data |
+| **Morse Beacon** | Flash messages in Morse code on NeoPixel LEDs. | Button, LED strip data |
 | **Your Idea** | Pitch something that fits the constraints. | ~5-10 pins total |
 
 All projects use the same RTL-to-GDS flow. The difference is what your chip *does*.

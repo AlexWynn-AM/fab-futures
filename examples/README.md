@@ -113,28 +113,28 @@ examples/dice_roller/
 
 ---
 
-## LED Messenger
+## Morse Beacon
 
-**What it does:** Scrolls your name (or any message) on a strip of NeoPixel LEDs.
-One wire output. Pure magic.
+**What it does:** Flashes your message in Morse code on a strip of NeoPixel LEDs.
+All LEDs blink together—dots, dashes, and pauses. One wire output.
 
-**Demo moment:** It's wearable. Put it on a hat, a bag, a jacket. Your chip, your name, your colors.
+**Demo moment:** It's wearable. Put it on a hat, a bag, a jacket. Your chip, your message, your colors—in Morse code.
 
 **I/O:**
 - 1 button (cycle colors)
 - 1 data pin (to WS2812 LED strip)
 
-**What you'll learn:** Precise timing, serial protocols, finite state machines
+**What you'll learn:** Precise timing, serial protocols (WS2812), state machines, encoding (ASCII to Morse)
 
 **Customize it:**
 - Your name, your message
-- More colors, gradients, rainbow mode
-- Different fonts, bigger letters
+- Adjust Morse timing (faster or slower)
+- More colors, color cycling
 
 ```
-examples/led_messenger/
-├── led_messenger.v       # main design
-└── led_messenger_tb.v    # testbench
+examples/morse_beacon/
+├── morse_beacon.v       # main design
+└── morse_beacon_tb.v    # testbench
 ```
 
 ---
