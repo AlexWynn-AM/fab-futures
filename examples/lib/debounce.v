@@ -81,8 +81,9 @@ module debounce #(
             // Step 1: Synchronize the raw input
             // ================================================================
             // External signals can change at any time, which can cause
-            // "metastability" - the flip-flop gets confused and outputs
-            // an undefined value. Passing through one register helps.
+            // "metastability" - the flip-flop output may briefly oscillate
+            // or settle to an unpredictable value. This synchronizer register
+            // gives the signal time to stabilize before we use it.
             btn_sync <= btn_raw;
 
             // ================================================================

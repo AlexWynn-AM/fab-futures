@@ -248,7 +248,7 @@ module dice_roller #(
         message[5] = 8'h64;  // 'd'
         message[6] = 8'h3A;  // ':'
         message[7] = 8'h20;  // ' '
-        message[8] = 8'h3F;  // '?' (placeholder, replaced with digit)
+        message[8] = 8'h3F;  // '?' (initial value, updated to actual digit on line 278)
         message[9] = 8'h0A;  // '\n'
     end
 
