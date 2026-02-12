@@ -23,6 +23,8 @@
 //
 // ============================================================================
 
+`timescale 1ns/1ps
+
 module uart_tx #(
     // ========================================================================
     // Parameters - these can be changed when instantiating the module
