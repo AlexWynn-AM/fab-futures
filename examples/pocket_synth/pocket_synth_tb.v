@@ -81,19 +81,20 @@ module pocket_synth_tb;
 
         // Only calculate if we have a previous edge to compare to
         if (last_edge != 0) begin
-            // Period = time between edges × 2 (since we measure half-periods)
-            // Frequency = 1 / period
-            // $time is in picoseconds with our timescale, so:
-            //   period (in seconds) = (this_edge - last_edge) × 2 × 1e-12
-            //   frequency = 1 / period = 1e12 / ((this_edge - last_edge) × 2)
-            //
-            // But with timescale 1ns/1ps, $time returns nanoseconds, so:
-            //   frequency = 1e9 / ((this_edge - last_edge) × 2)
+            // Time between rising edges = full period of the square wave
+            // With timescale 1ns/1ps, $time returns nanoseconds, so:
+            //   frequency (Hz) = 1e9 / period (ns)
 
-            measured_freq = 1.0e9 / (2.0 * (this_edge - last_edge));
+            measured_freq = 1.0e9 / (this_edge - last_edge);
         end
 
         last_edge = this_edge;  // Remember this edge for next time
+    end
+
+    // Reset edge tracking when audio stops (between notes)
+    always @(negedge audio_out) begin
+        if (keys == 4'b0000)
+            last_edge = 0;
     end
 
     // ========================================================================
@@ -130,12 +131,12 @@ module pocket_synth_tb;
         //   4. Release the key
         //
         // We need to wait long enough to get accurate measurements.
-        // At ~262 Hz, one cycle takes ~4 ms. We wait ~4 ms per note.
+        // At ~262 Hz, one cycle takes ~4 ms. We wait 10 ms to get 2-3 cycles.
 
         // Test C4 (262 Hz) - Key 0
         $display("Playing C...");
         keys = 4'b0001;         // Press key 0
-        #4000000;               // Wait 4 ms (several cycles)
+        #10000000;              // Wait 10 ms (2-3 cycles for lowest note)
         $display("  Measured: %.1f Hz (expected ~262 Hz)", measured_freq);
         keys = 4'b0000;         // Release
         #1000000;               // Brief pause between notes
@@ -143,7 +144,7 @@ module pocket_synth_tb;
         // Test E4 (330 Hz) - Key 1
         $display("Playing E...");
         keys = 4'b0010;         // Press key 1
-        #4000000;
+        #10000000;
         $display("  Measured: %.1f Hz (expected ~330 Hz)", measured_freq);
         keys = 4'b0000;
         #1000000;
@@ -151,7 +152,7 @@ module pocket_synth_tb;
         // Test G4 (392 Hz) - Key 2
         $display("Playing G...");
         keys = 4'b0100;         // Press key 2
-        #4000000;
+        #10000000;
         $display("  Measured: %.1f Hz (expected ~392 Hz)", measured_freq);
         keys = 4'b0000;
         #1000000;
@@ -159,7 +160,7 @@ module pocket_synth_tb;
         // Test B4 (494 Hz) - Key 3
         $display("Playing B...");
         keys = 4'b1000;         // Press key 3
-        #4000000;
+        #10000000;
         $display("  Measured: %.1f Hz (expected ~494 Hz)", measured_freq);
         keys = 4'b0000;
         #1000000;
@@ -172,7 +173,7 @@ module pocket_synth_tb;
 
         $display("Playing C+G (should hear C due to priority)...");
         keys = 4'b0101;         // Press keys 0 and 2
-        #4000000;
+        #10000000;
         $display("  Measured: %.1f Hz (expected ~262 Hz)", measured_freq);
         keys = 4'b0000;
 

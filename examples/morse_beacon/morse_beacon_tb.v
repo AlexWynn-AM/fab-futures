@@ -37,12 +37,12 @@ module morse_beacon_tb;
     // DUT Instantiation
     // ========================================================================
     //
-    // We use a faster clock and shorter unit time for simulation.
-    // At 1 MHz with UNIT_TIME = CLK_FREQ/10 = 100,000 cycles = 100ms per unit.
-    // That's still slow for simulation, so we'll just run a portion.
+    // We use 10 MHz clock for simulation. This is fast enough for WS2812
+    // timing (needs ~0.4µs resolution) while still being reasonable to simulate.
+    // At 10 MHz, UNIT_TIME = 10_000_000/10 = 1,000,000 cycles = 100ms per unit.
 
     morse_beacon #(
-        .CLK_FREQ(1_000_000),   // 1 MHz clock for simulation
+        .CLK_FREQ(10_000_000),  // 10 MHz clock for simulation
         .NUM_LEDS(8)
     ) dut (
         .clk(clk),
@@ -56,7 +56,7 @@ module morse_beacon_tb;
     // ========================================================================
 
     always begin
-        #500;           // 500 ns half-period = 1 MHz
+        #50;            // 50 ns half-period = 10 MHz
         clk = ~clk;
     end
 
@@ -150,7 +150,7 @@ module morse_beacon_tb;
         $display("Expected Morse: .... . .-.. .-.. ---");
         $display("");
         $display("Watching for LED on/off transitions...");
-        $display("(At 1 MHz sim clock, 1 unit = 100ms = 100,000 cycles)");
+        $display("(At 10 MHz sim clock, 1 unit = 100ms = 1,000,000 cycles)");
         $display("");
 
         // Release reset
