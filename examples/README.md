@@ -1,5 +1,7 @@
 # Example Projects
 
+> **New here?** Start with [QUICKSTART.md](QUICKSTART.md) for step-by-step instructions.
+
 These examples are **starting points**, not finished assignments.
 
 Your goal is to make something you'd actually want to demo. Use these as
@@ -181,9 +183,22 @@ examples/lib/
 
 ## Running a Testbench
 
+**Easy way (recommended):**
+
 ```bash
-# From inside the container
-cd /path/to/examples/fortune_teller
+cd /foss/examples
+
+make sim-fortune    # Fortune Teller
+make sim-synth      # Pocket Synth
+make sim-dice       # Dice Roller
+make sim-led        # Morse Beacon
+make sim-all        # Run all simulations
+```
+
+**Manual way (if you need custom options):**
+
+```bash
+cd /foss/examples/fortune_teller
 
 # Compile and run
 iverilog -o sim.vvp -I../lib fortune_teller.v fortune_teller_tb.v ../lib/*.v

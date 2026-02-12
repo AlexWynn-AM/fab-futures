@@ -176,6 +176,10 @@ module morse_beacon #(
     wire [3:0] morse_len = morse_data[11:8];
     wire       is_dash   = morse_data[symbol_idx];
 
+    // Wire to compute morse data for current character (for immediate comparison)
+    wire [11:0] curr_char_morse = get_morse(message[char_idx]);
+    wire [3:0]  curr_char_len   = curr_char_morse[11:8];
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             morse_state <= MS_IDLE;
@@ -206,7 +210,8 @@ module morse_beacon #(
                     morse_timer <= 0;
 
                     // Check for space (word gap) or regular character
-                    if (message[char_idx] == " " || get_morse(message[char_idx])[11:8] == 0)
+                    // Use ASCII value 32 (0x20) for space, check length via wire
+                    if (message[char_idx] == 8'h20 || curr_char_len == 0)
                         morse_state <= MS_WORD_GAP;
                     else
                         morse_state <= MS_SYMBOL;

@@ -6,7 +6,7 @@
 #   make sim-fortune    - Simulate Fortune Teller
 #   make sim-synth      - Simulate Pocket Synth
 #   make sim-dice       - Simulate Dice Roller
-#   make sim-led        - Simulate LED Messenger
+#   make sim-led        - Simulate Morse Beacon
 #   make sim-all        - Simulate all projects
 #   make lint-all       - Lint all projects
 #   make clean          - Remove generated files
@@ -44,7 +44,7 @@ sim-synth: pocket_synth/pocket_synth.vvp
 sim-dice: dice_roller/dice_roller.vvp
 	$(VVP) $<
 
-sim-led: led_messenger/led_messenger.vvp
+sim-led: morse_beacon/morse_beacon.vvp
 	$(VVP) $<
 
 sim-all: sim-fortune sim-synth sim-dice sim-led
@@ -60,10 +60,10 @@ fortune_teller/fortune_teller.vvp: fortune_teller/fortune_teller.v fortune_telle
 pocket_synth/pocket_synth.vvp: pocket_synth/pocket_synth.v pocket_synth/pocket_synth_tb.v $(LIB)/debounce.v
 	$(IVERILOG) $(IVERILOG_FLAGS) -I$(LIB) -o $@ $^
 
-dice_roller/dice_roller.vvp: dice_roller/dice_roller.v dice_roller/dice_roller_tb.v $(LIB)/debounce.v
+dice_roller/dice_roller.vvp: dice_roller/dice_roller.v dice_roller/dice_roller_tb.v $(LIB)/debounce.v $(LIB)/uart_tx.v
 	$(IVERILOG) $(IVERILOG_FLAGS) -I$(LIB) -o $@ $^
 
-led_messenger/led_messenger.vvp: led_messenger/led_messenger.v led_messenger/led_messenger_tb.v
+morse_beacon/morse_beacon.vvp: morse_beacon/morse_beacon.v morse_beacon/morse_beacon_tb.v $(LIB)/debounce.v
 	$(IVERILOG) $(IVERILOG_FLAGS) -I$(LIB) -o $@ $^
 
 # =============================================================================
@@ -79,10 +79,10 @@ lint-synth:
 	$(VERILATOR) $(VERILATOR_FLAGS) -I$(LIB) pocket_synth/pocket_synth.v $(LIB)/debounce.v
 
 lint-dice:
-	$(VERILATOR) $(VERILATOR_FLAGS) -I$(LIB) dice_roller/dice_roller.v $(LIB)/debounce.v
+	$(VERILATOR) $(VERILATOR_FLAGS) -I$(LIB) dice_roller/dice_roller.v $(LIB)/debounce.v $(LIB)/uart_tx.v
 
 lint-led:
-	$(VERILATOR) $(VERILATOR_FLAGS) -I$(LIB) led_messenger/led_messenger.v
+	$(VERILATOR) $(VERILATOR_FLAGS) -I$(LIB) morse_beacon/morse_beacon.v $(LIB)/debounce.v
 
 lint-all: lint-fortune lint-synth lint-dice lint-led
 	@echo "All lint checks passed."
@@ -107,14 +107,14 @@ synth-synth:
 
 synth-dice:
 	$(YOSYS) -p " \
-		read_verilog -I$(LIB) dice_roller/dice_roller.v $(LIB)/debounce.v; \
+		read_verilog -I$(LIB) dice_roller/dice_roller.v $(LIB)/debounce.v $(LIB)/uart_tx.v; \
 		synth -top dice_roller; \
 		stat"
 
 synth-led:
 	$(YOSYS) -p " \
-		read_verilog -I$(LIB) led_messenger/led_messenger.v; \
-		synth -top led_messenger; \
+		read_verilog -I$(LIB) morse_beacon/morse_beacon.v $(LIB)/debounce.v; \
+		synth -top morse_beacon; \
 		stat"
 
 # =============================================================================
@@ -140,7 +140,7 @@ help:
 	@echo "  make sim-fortune  - Run Fortune Teller simulation"
 	@echo "  make sim-synth    - Run Pocket Synth simulation"
 	@echo "  make sim-dice     - Run Dice Roller simulation"
-	@echo "  make sim-led      - Run LED Messenger simulation"
+	@echo "  make sim-led      - Run Morse Beacon simulation"
 	@echo "  make sim-all      - Run all simulations"
 	@echo ""
 	@echo "Linting:"
