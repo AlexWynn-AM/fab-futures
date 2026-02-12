@@ -1,6 +1,10 @@
 # macOS
 .DS_Store
 
+# Simulation outputs (version-specific, rebuild locally)
+*.vvp
+*.vcd
+
 # Editor
 *.swp
 *.swo
