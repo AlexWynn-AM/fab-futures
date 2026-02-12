@@ -33,7 +33,7 @@ echo ""
 
 cd "$SCRIPT_DIR/IIC-OSIC-TOOLS"
 
-# Mount examples directory as read-only alongside designs
-export DOCKER_EXTRA_PARAMS="-v ${EXAMPLES}:/foss/examples:ro"
+# Mount examples directory (read-write so make can compile simulations)
+export DOCKER_EXTRA_PARAMS="-v ${EXAMPLES}:/foss/examples"
 
 DESIGNS="$DESIGNS" WEBSERVER_PORT="$WEBSERVER_PORT" ./start_vnc.sh
