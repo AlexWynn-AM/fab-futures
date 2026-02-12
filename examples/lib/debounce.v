@@ -19,6 +19,11 @@
 //
 // ============================================================================
 
+// Timescale: sets simulation time unit and precision
+//   `timescale <unit>/<precision>
+//   - unit: what #1 means (here, 1 nanosecond)
+//   - precision: smallest measurable time (here, 1 picosecond)
+//   Every Verilog file should have this to avoid "inherited timescale" warnings.
 `timescale 1ns/1ps
 
 module debounce #(
