@@ -2,14 +2,14 @@
 # Fab Futures Examples - Build Automation
 # =============================================================================
 #
-# Simulation:
+# Simulation (no special setup required):
 #   make sim-fortune     - Simulate Fortune Teller
 #   make sim-synth       - Simulate Pocket Synth
 #   make sim-dice        - Simulate Dice Roller
 #   make sim-led         - Simulate Morse Beacon
 #   make sim-all         - Simulate all projects
 #
-# ASIC Flow (requires IIC-OSIC-TOOLS or similar environment):
+# ASIC Flow (requires IIC-OSIC-TOOLS Docker environment):
 #   make build-fortune   - Full flow: synth + PnR + GDS
 #   make build-synth     - Full flow for Pocket Synth
 #   make build-dice      - Full flow for Dice Roller
@@ -22,6 +22,11 @@
 #   make sky130-fortune  - Synthesize to Sky130 cells
 #   make pnr-fortune     - Place and route
 #   make gds-fortune     - Generate GDS
+#
+# Setup:
+#   ASIC flow requires the Sky130 PDK. Use one of:
+#   1. Run inside IIC-OSIC-TOOLS Docker (PDK_ROOT is set automatically)
+#   2. Set PDK_ROOT manually: export PDK_ROOT=/path/to/pdks
 #
 # =============================================================================
 
@@ -45,8 +50,42 @@ VERILATOR_FLAGS := --lint-only -Wall
 LIB := lib
 FLOW := flow
 
-# Check for PDK
-PDK_ROOT ?= $(error PDK_ROOT is not set. Source the IIC-OSIC-TOOLS environment first)
+# =============================================================================
+# PDK Detection
+# =============================================================================
+# Try to find PDK_ROOT automatically. Check common locations:
+#   1. Environment variable (if already set)
+#   2. /foss/pdks (IIC-OSIC-TOOLS Docker container)
+#   3. ~/pdks (common local install)
+#   4. /opt/pdks (system install)
+
+ifndef PDK_ROOT
+  ifneq (,$(wildcard /foss/pdks/sky130A))
+    PDK_ROOT := /foss/pdks
+  else ifneq (,$(wildcard $(HOME)/pdks/sky130A))
+    PDK_ROOT := $(HOME)/pdks
+  else ifneq (,$(wildcard /opt/pdks/sky130A))
+    PDK_ROOT := /opt/pdks
+  endif
+endif
+
+# Helper to check if PDK is available (used by ASIC targets)
+define check_pdk
+	@if [ -z "$(PDK_ROOT)" ]; then \
+		echo "ERROR: PDK_ROOT is not set and Sky130 PDK not found."; \
+		echo ""; \
+		echo "To run the ASIC flow, you need the Sky130 PDK. Options:"; \
+		echo "  1. Use IIC-OSIC-TOOLS Docker (recommended):"; \
+		echo "     cd ../IIC-OSIC-TOOLS && ./start_jupyter.sh"; \
+		echo "     Then run make commands inside the container."; \
+		echo ""; \
+		echo "  2. Set PDK_ROOT manually:"; \
+		echo "     export PDK_ROOT=/path/to/pdks"; \
+		echo ""; \
+		echo "Simulation targets (make sim-*) work without the PDK."; \
+		exit 1; \
+	fi
+endef
 
 # =============================================================================
 # Project definitions
@@ -162,6 +201,7 @@ sky130-led: $(LED_BUILD)/$(LED_TOP)_synth.v
 sky130-all: sky130-fortune sky130-synth sky130-dice sky130-led
 
 $(FORTUNE_BUILD)/$(FORTUNE_TOP)_synth.v: $(FORTUNE_SRC)
+	$(call check_pdk)
 	@mkdir -p $(FORTUNE_BUILD)
 	cd $(FORTUNE_DIR) && $(YOSYS) -c ../$(FLOW)/synth.tcl \
 		-D TOP=$(FORTUNE_TOP) \
@@ -169,6 +209,7 @@ $(FORTUNE_BUILD)/$(FORTUNE_TOP)_synth.v: $(FORTUNE_SRC)
 		-D OUT_DIR=build
 
 $(SYNTH_BUILD)/$(SYNTH_TOP)_synth.v: $(SYNTH_SRC)
+	$(call check_pdk)
 	@mkdir -p $(SYNTH_BUILD)
 	cd $(SYNTH_DIR) && $(YOSYS) -c ../$(FLOW)/synth.tcl \
 		-D TOP=$(SYNTH_TOP) \
@@ -176,6 +217,7 @@ $(SYNTH_BUILD)/$(SYNTH_TOP)_synth.v: $(SYNTH_SRC)
 		-D OUT_DIR=build
 
 $(DICE_BUILD)/$(DICE_TOP)_synth.v: $(DICE_SRC)
+	$(call check_pdk)
 	@mkdir -p $(DICE_BUILD)
 	cd $(DICE_DIR) && $(YOSYS) -c ../$(FLOW)/synth.tcl \
 		-D TOP=$(DICE_TOP) \
@@ -183,6 +225,7 @@ $(DICE_BUILD)/$(DICE_TOP)_synth.v: $(DICE_SRC)
 		-D OUT_DIR=build
 
 $(LED_BUILD)/$(LED_TOP)_synth.v: $(LED_SRC)
+	$(call check_pdk)
 	@mkdir -p $(LED_BUILD)
 	cd $(LED_DIR) && $(YOSYS) -c ../$(FLOW)/synth.tcl \
 		-D TOP=$(LED_TOP) \
@@ -329,6 +372,34 @@ clean: clean-sim clean-build
 	@echo "All cleaned."
 
 # =============================================================================
+# Environment Check
+# =============================================================================
+
+.PHONY: check-env
+
+check-env:
+	@echo "=== Environment Check ==="
+	@echo ""
+	@echo "PDK_ROOT: $(PDK_ROOT)"
+	@if [ -n "$(PDK_ROOT)" ] && [ -d "$(PDK_ROOT)/sky130A" ]; then \
+		echo "  Status: OK (Sky130 PDK found)"; \
+	else \
+		echo "  Status: NOT FOUND"; \
+		echo ""; \
+		echo "  To use the ASIC flow, run inside IIC-OSIC-TOOLS Docker:"; \
+		echo "    cd ../IIC-OSIC-TOOLS && ./start_jupyter.sh"; \
+	fi
+	@echo ""
+	@echo "Tools:"
+	@which $(YOSYS) > /dev/null 2>&1 && echo "  yosys:    OK ($(shell which $(YOSYS)))" || echo "  yosys:    NOT FOUND"
+	@which $(OPENROAD) > /dev/null 2>&1 && echo "  openroad: OK ($(shell which $(OPENROAD)))" || echo "  openroad: NOT FOUND"
+	@which $(MAGIC) > /dev/null 2>&1 && echo "  magic:    OK ($(shell which $(MAGIC)))" || echo "  magic:    NOT FOUND"
+	@which $(KLAYOUT) > /dev/null 2>&1 && echo "  klayout:  OK ($(shell which $(KLAYOUT)))" || echo "  klayout:  NOT FOUND"
+	@which $(IVERILOG) > /dev/null 2>&1 && echo "  iverilog: OK ($(shell which $(IVERILOG)))" || echo "  iverilog: NOT FOUND"
+	@which $(VERILATOR) > /dev/null 2>&1 && echo "  verilator: OK ($(shell which $(VERILATOR)))" || echo "  verilator: NOT FOUND"
+	@echo ""
+
+# =============================================================================
 # Help
 # =============================================================================
 
@@ -336,6 +407,9 @@ clean: clean-sim clean-build
 
 help:
 	@echo "Fab Futures Examples Makefile"
+	@echo ""
+	@echo "Setup:"
+	@echo "  make check-env     - Check if tools and PDK are available"
 	@echo ""
 	@echo "Simulation (no PDK required):"
 	@echo "  make sim-fortune   - Run Fortune Teller simulation"
@@ -350,7 +424,7 @@ help:
 	@echo "Quick Synthesis (no PDK required):"
 	@echo "  make synth-fortune - Synthesize and show gate count"
 	@echo ""
-	@echo "ASIC Flow (requires PDK_ROOT environment variable):"
+	@echo "ASIC Flow (requires Sky130 PDK - run 'make check-env' to verify):"
 	@echo "  make build-fortune - Full flow: synth -> P&R -> GDS"
 	@echo "  make build-all     - Build all projects"
 	@echo ""
