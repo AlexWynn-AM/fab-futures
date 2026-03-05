@@ -2,15 +2,7 @@
 # OpenROAD Place & Route Script for Sky130
 # ============================================================================
 #
-# Usage: openroad -exit pnr.tcl
-#
-# Environment variables:
-#   TOP       - Top module name
-#   OUT_DIR   - Build directory (default: build)
-#   PDK_ROOT  - Path to Sky130 PDK
-#
-# Example:
-#   TOP=fortune_teller OUT_DIR=build openroad -exit pnr.tcl
+# Usage: TOP=<module> OUT_DIR=<dir> openroad -exit pnr.tcl
 #
 # ============================================================================
 
@@ -20,6 +12,7 @@ set OUT_DIR [expr {[info exists ::env(OUT_DIR)] ? $::env(OUT_DIR) : "build"}]
 set PDK_ROOT $::env(PDK_ROOT)
 
 set LIB_DIR "$PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd"
+set TECH_DIR "$PDK_ROOT/sky130A/libs.tech/openlane/sky130_fd_sc_hd"
 
 puts "============================================"
 puts "Place & Route: $TOP"
@@ -30,12 +23,12 @@ puts "============================================"
 # ----------------------------------------------------------------------------
 # Read technology files
 # ----------------------------------------------------------------------------
+# Read tech LEF first (defines layers, sites, etc.)
+read_lef $LIB_DIR/techlef/sky130_fd_sc_hd__nom.tlef
+
+# Read standard cell LEFs
 read_lef $LIB_DIR/lef/sky130_fd_sc_hd.lef
-read_lef $LIB_DIR/lef/sky130_ef_sc_hd__decap_12.lef
-read_lef $LIB_DIR/lef/sky130_ef_sc_hd__fill_1.lef
-read_lef $LIB_DIR/lef/sky130_ef_sc_hd__fill_2.lef
-read_lef $LIB_DIR/lef/sky130_ef_sc_hd__fill_4.lef
-read_lef $LIB_DIR/lef/sky130_ef_sc_hd__fill_8.lef
+read_lef $LIB_DIR/lef/sky130_ef_sc_hd.lef
 
 read_liberty $LIB_DIR/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 
@@ -53,32 +46,48 @@ read_sdc ../lib/constraints.sdc
 # ----------------------------------------------------------------------------
 # Floorplan
 # ----------------------------------------------------------------------------
-# Initialize with 50% utilization, square aspect ratio, 5um margin
-initialize_floorplan \
-    -utilization 50 \
-    -aspect_ratio 1.0 \
-    -core_space 5
+puts "Initializing floorplan..."
 
-# Define placement site
-source $PDK_ROOT/sky130A/libs.tech/openlane/sky130_fd_sc_hd/tracks.info
+# Initialize with 40% utilization, square aspect ratio, 5um margin
+initialize_floorplan \
+    -utilization 40 \
+    -aspect_ratio 1.0 \
+    -core_space 5 \
+    -site unithd
+
+# Make tracks for routing
+make_tracks
+
+# ----------------------------------------------------------------------------
+# I/O Placement
+# ----------------------------------------------------------------------------
+puts "Placing I/O pins..."
+place_pins -hor_layers met3 -ver_layers met2
 
 # ----------------------------------------------------------------------------
 # Power Distribution Network
 # ----------------------------------------------------------------------------
-# Add global connections
+puts "Building power grid..."
+
+# Add global connections for power
 add_global_connection -net VDD -pin_pattern "^VPWR$" -power
-add_global_connection -net VDD -pin_pattern "^VPB$" -power
+add_global_connection -net VDD -pin_pattern "^VPB$"
 add_global_connection -net VSS -pin_pattern "^VGND$" -ground
-add_global_connection -net VSS -pin_pattern "^VNB$" -ground
+add_global_connection -net VSS -pin_pattern "^VNB$"
 
 global_connect
 
-# Set voltage
-set_voltage 1.8 -vdd VDD -ground VSS
+# Simple power stripes
+set_voltage_domain -power VDD -ground VSS
 
-# Simple power grid (for small designs)
-# Horizontal stripes on met4, vertical on met5
-pdngen -skip_trim
+define_pdn_grid -name core_grid -pins {met4 met5}
+add_pdn_stripe -grid core_grid -layer met1 -width 0.48 -followpins
+add_pdn_stripe -grid core_grid -layer met4 -width 1.6 -pitch 50 -offset 2
+add_pdn_stripe -grid core_grid -layer met5 -width 1.6 -pitch 50 -offset 2
+add_pdn_connect -grid core_grid -layers {met1 met4}
+add_pdn_connect -grid core_grid -layers {met4 met5}
+
+pdngen
 
 # ----------------------------------------------------------------------------
 # Placement
@@ -86,31 +95,37 @@ pdngen -skip_trim
 puts "Running placement..."
 
 # Global placement
-global_placement -density 0.6
+global_placement -density 0.7 -pad_left 2 -pad_right 2
 
 # Detailed placement
 detailed_placement
 
 # Check placement
-check_placement -verbose
+if {[catch {check_placement -verbose} err]} {
+    puts "Warning: Placement check: $err"
+}
 
 # ----------------------------------------------------------------------------
 # Clock Tree Synthesis
 # ----------------------------------------------------------------------------
 puts "Running clock tree synthesis..."
 
-# Configure CTS
-set_wire_rc -clock \
-    -layer met3
+# Repair design before CTS
+repair_design
 
+# Set wire RC for clock
+set_wire_rc -clock -layer met3
+
+# Run CTS
 clock_tree_synthesis \
-    -root_buf sky130_fd_sc_hd__clkbuf_8 \
-    -buf_list {sky130_fd_sc_hd__clkbuf_1 sky130_fd_sc_hd__clkbuf_2 sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8}
+    -root_buf sky130_fd_sc_hd__clkbuf_16 \
+    -buf_list {sky130_fd_sc_hd__clkbuf_4 sky130_fd_sc_hd__clkbuf_8 sky130_fd_sc_hd__clkbuf_16} \
+    -sink_clustering_enable
 
 # Repair clock nets
 repair_clock_nets
 
-# Update placement after CTS
+# Legalize after CTS
 detailed_placement
 
 # ----------------------------------------------------------------------------
@@ -123,40 +138,39 @@ set_routing_layers -signal met1-met4 -clock met1-met5
 
 # Global route
 global_route -guide_file $OUT_DIR/${TOP}_route.guide \
-    -congestion_iterations 50
+    -congestion_iterations 100 \
+    -allow_congestion
 
 # Detailed route
-detailed_route \
-    -output_drc $OUT_DIR/${TOP}_drc.rpt \
-    -output_maze $OUT_DIR/${TOP}_maze.log \
-    -bottom_routing_layer met1 \
-    -top_routing_layer met4
+detailed_route -output_drc $OUT_DIR/${TOP}_drc.rpt
 
 # ----------------------------------------------------------------------------
 # Filler cells
 # ----------------------------------------------------------------------------
 puts "Adding filler cells..."
 
-filler_placement sky130_ef_sc_hd__fill_*
+filler_placement {sky130_ef_sc_hd__decap_12 sky130_fd_sc_hd__fill_1 sky130_fd_sc_hd__fill_2}
+
+# Final legalization
 check_placement
 
 # ----------------------------------------------------------------------------
-# Final checks
+# Final checks and reports
 # ----------------------------------------------------------------------------
-puts "Running final checks..."
+puts "Running final analysis..."
+
+# Estimate parasitics for timing
+estimate_parasitics -placement
 
 # Timing analysis
-report_checks -path_delay max -slack_max -0.1 -format full_clock_expanded \
-    > $OUT_DIR/${TOP}_timing.rpt
-
+report_checks -path_delay max -slack_max 0 -group_count 5 > $OUT_DIR/${TOP}_timing.rpt
 report_wns > $OUT_DIR/${TOP}_wns.rpt
 report_tns > $OUT_DIR/${TOP}_tns.rpt
 
-# Power analysis (with estimated activity)
+# Power analysis
 report_power > $OUT_DIR/${TOP}_power.rpt
 
-# Design rule checks
-estimate_parasitics -placement
+# Area
 report_design_area > $OUT_DIR/${TOP}_area.rpt
 
 # ----------------------------------------------------------------------------

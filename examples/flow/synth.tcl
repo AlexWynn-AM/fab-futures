@@ -2,27 +2,37 @@
 # Yosys Synthesis Script for Sky130
 # ============================================================================
 #
-# Usage: yosys -c synth.tcl -D TOP=<module> -D VERILOG="<files>" -D OUT_DIR=<dir>
+# Usage: TOP=<module> VERILOG="<files>" OUT_DIR=<dir> yosys -c synth.tcl
 #
 # Example:
-#   yosys -c synth.tcl -D TOP=fortune_teller \
-#         -D VERILOG="fortune_teller.v ../lib/debounce.v ../lib/uart_tx.v" \
-#         -D OUT_DIR=build
+#   TOP=fortune_teller \
+#   VERILOG="fortune_teller.v ../lib/debounce.v ../lib/uart_tx.v" \
+#   OUT_DIR=build \
+#   yosys -c synth.tcl
 #
 # ============================================================================
 
-# Check required variables
-if {![info exists TOP]} {
-    puts "ERROR: TOP not defined. Use -D TOP=<module_name>"
+# Import Yosys commands into TCL namespace
+yosys -import
+
+# Get variables from environment
+if {[info exists ::env(TOP)]} {
+    set TOP $::env(TOP)
+} else {
+    puts "ERROR: TOP not defined. Set TOP=<module_name> environment variable"
     exit 1
 }
 
-if {![info exists VERILOG]} {
-    puts "ERROR: VERILOG not defined. Use -D VERILOG=\"<files>\""
+if {[info exists ::env(VERILOG)]} {
+    set VERILOG $::env(VERILOG)
+} else {
+    puts "ERROR: VERILOG not defined. Set VERILOG=\"<files>\" environment variable"
     exit 1
 }
 
-if {![info exists OUT_DIR]} {
+if {[info exists ::env(OUT_DIR)]} {
+    set OUT_DIR $::env(OUT_DIR)
+} else {
     set OUT_DIR "build"
 }
 
@@ -54,6 +64,9 @@ abc -liberty $::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_
 
 # Clean up
 clean
+
+# Replace constant drivers with tie cells
+hilomap -hicell sky130_fd_sc_hd__conb_1 HI -locell sky130_fd_sc_hd__conb_1 LO
 
 # Print statistics
 stat -liberty $::env(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
