@@ -33,8 +33,7 @@ function initCodeToggles() {
   });
 }
 
-// Run on load and after short delay for dynamic content
-document.addEventListener('DOMContentLoaded', function() {
+// Run on page load and SPA navigation (Material instant loading)
+document$.subscribe(function() {
   initCodeToggles();
-  setTimeout(initCodeToggles, 100);
 });

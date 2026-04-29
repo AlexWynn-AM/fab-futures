@@ -1,9 +1,13 @@
 site_name: Fab Futures
-site_description: Chip design course materials
+site_description: RTL-to-GDS chip design with open-source EDA tools. By Adiabatic Machines.
+site_author: Adiabatic Machines
+copyright: "&copy; 2026 Adiabatic Machines"
 repo_url: https://github.com/AlexWynn-AM/fab-futures
 
 theme:
   name: material
+  logo: assets/am-mark.png
+  favicon: assets/am-mark.png
   palette:
     - scheme: default
       primary: indigo
@@ -19,7 +23,13 @@ theme:
         name: Switch to light mode
   features:
     - navigation.sections
-    - navigation.expand
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
+    - navigation.prune
+    - toc.follow
+    - search.suggest
+    - search.highlight
     - content.code.copy
 
 plugins:
