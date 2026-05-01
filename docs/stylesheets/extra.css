@@ -1,3 +1,21 @@
+/* AM brand colors — override Material theme indigo with #4d65ff */
+:root,
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #4d65ff;
+  --md-primary-fg-color--light: #8092ff;
+  --md-primary-fg-color--dark: #3347cc;
+  --md-accent-fg-color: #4d65ff;
+  --md-typeset-a-color: #4d65ff;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #4d65ff;
+  --md-primary-fg-color--light: #8092ff;
+  --md-primary-fg-color--dark: #3347cc;
+  --md-accent-fg-color: #4d65ff;
+  --md-typeset-a-color: #8092ff;
+}
+
 /* Fix notebook header divs - ensure text is visible */
 .md-content div[style*="background: linear-gradient"] {
   color: white !important;
